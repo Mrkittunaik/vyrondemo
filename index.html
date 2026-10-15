@@ -74,6 +74,12 @@ header .cart b{background:#111;color:#fff}
 body.inner header{background:transparent}
 .pg{padding:40px 48px 64px;min-height:70vh}
 .pg h1{margin:0 0 20px;font-size:clamp(28px,4vw,48px)}
+.sbn{position:relative;height:clamp(180px,26vw,320px);border-radius:8px;overflow:hidden;margin:0 0 28px;background:linear-gradient(135deg,#2a2a2a,#050505);color:#fff;display:flex;align-items:flex-end}
+.sbn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%}
+.sbn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#000a,#0000 70%),linear-gradient(#0000 40%,#0008)}
+.sbt{position:relative;z-index:1;padding:clamp(20px,3vw,40px)}
+.sbn h1{margin:0;font-size:clamp(30px,5vw,60px);line-height:1.05;text-transform:uppercase}
+.sbn p{margin:8px 0 0;font-size:clamp(13px,1.4vw,18px);text-transform:uppercase}
 .chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
 .chips a{padding:8px 18px;border:1px solid #111;border-radius:5px;color:#111;text-decoration:none}
 .chips a.on{background:#111;color:#fff}
@@ -330,7 +336,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #ffd4
 </section>
 </main>
 
-<main class='pg' id='shop' hidden><h1>Shop</h1><div class='chips' id='chips'></div><div class='bar'><span id='cc'></span><div style='display:flex;gap:10px;flex-wrap:wrap'><input id='fq' class='mini' placeholder='Search products' aria-label='Search products'><select id='sort' class='mini' aria-label='Sort'><option value='f'>Featured</option><option value='n'>Newest</option><option value='l'>Price: low to high</option><option value='h'>Price: high to low</option></select></div></div><div class='pgrid' id='shopGrid'></div></main>
+<main class='pg' id='shop' hidden><div class='sbn' id='sbn'><img id='sbnImg' alt=''><div class='sbt'><h1 id='sbnT'>Shop</h1><p id='sbnP'></p></div></div><div class='chips' id='chips'></div><div class='bar'><span id='cc'></span><div style='display:flex;gap:10px;flex-wrap:wrap'><input id='fq' class='mini' placeholder='Search products' aria-label='Search products'><select id='sort' class='mini' aria-label='Sort'><option value='f'>Featured</option><option value='n'>Newest</option><option value='l'>Price: low to high</option><option value='h'>Price: high to low</option></select></div></div><div class='pgrid' id='shopGrid'></div></main>
 <main class='pg' id='wishlist' hidden></main>
 <main class='pg' id='product' hidden></main>
 <main class='pg' id='about' hidden><h1>About Vyron</h1><div class='two'><img id='abImg' alt=''><div><p>Vyron makes loud, oversized streetwear for people who dress to be noticed. Heavyweight cotton, bold graphics and relaxed fits, designed in India and made in small batches.</p><p>Every drop is tested for fit, wash and feel before it goes live. No filler, just pieces you will actually wear.</p><div class='stats'><div><b>240 GSM</b><span>Heavyweight cotton</span></div><div><b>7 days</b><span>Easy returns</span></div><div><b>Weekly</b><span>Fresh drops</span></div></div><p><a class='btn' style='background:#111;color:#fff;display:inline-block' href='#/shop'>Shop now</a></p></div></div></main>
@@ -409,6 +415,8 @@ function grid(){let l=P.filter(p=>(SS.c==='all'||p.c===SS.c)&&p.n.toLowerCase().
 if(SS.s==='l')l.sort((a,b)=>a.p-b.p);if(SS.s==='h')l.sort((a,b)=>b.p-a.p);if(SS.s==='n')l.sort((a,b)=>b.id-a.id);
 q('#cc').textContent=l.length+' products';q('#shopGrid').innerHTML=l.map(card).join('')||`<p class='empty'>No products found.</p>`}
 function shop(c,qs=''){SS.c=['women','men','accessories'].includes(c)?c:'all';SS.q=qs;q('#fq').value=qs;
+const BN={all:['Shop','Everything from the Vyron drop',()=>document.querySelectorAll('.slide img')[1]],women:["Women's edit",'Shop women',()=>ti[1]],men:['Men','Shop men',()=>ti[0]],accessories:['Accessories','Shop accessories',()=>ti[2]]}[SS.c],bi=BN[2]();
+q('#sbnT').textContent=BN[0];q('#sbnP').textContent=BN[1];q('#sbnImg').src=bi?bi.src:'';
 q('#chips').innerHTML=['all','women','men','accessories'].map(x=>`<a href='#/shop/${x}' class='${x===SS.c?'on':''}'>${x[0].toUpperCase()+x.slice(1)}</a>`).join('');grid()}
 document.addEventListener('change',e=>{if(e.target.id==='sort'){SS.s=e.target.value;grid()}
 if(e.target.dataset&&e.target.dataset.cs){const [id,s]=e.target.dataset.cs.split('|'),ns=e.target.value,c=cart.find(x=>x.id==id&&x.s==s);if(c&&ns!==s){const ex=cart.find(x=>x.id==id&&x.s==ns);if(ex){ex.q+=c.q;cart=cart.filter(x=>x!==c)}else c.s=ns;draw();toast('Size changed to '+ns)}}});
@@ -451,7 +459,7 @@ car.addEventListener('mouseenter',()=>hov=true);car.addEventListener('mouseleave
 car.addEventListener('focusin',()=>hov=true);car.addEventListener('focusout',()=>hov=false);
 setInterval(()=>{if(!hov&&!document.hidden&&car.offsetWidth&&Date.now()-t0>900&&!matchMedia('(prefers-reduced-motion:reduce)').matches)go(1)},1000);
 document.querySelectorAll('.btn').forEach(a=>a.href='#/shop');
-document.querySelectorAll('.card').forEach(a=>a.href=a.textContent.trim()==='Accessories'?'#/shop/accessories':'#/shop');
+document.querySelectorAll('.card').forEach(a=>a.href=a.textContent.trim().startsWith('Accessories')?'#/shop/accessories':'#/shop');
 q('#best').innerHTML=[2,4,9,19].map(id=>card(P.find(x=>x.id===id))).join('');
 q('#gal').innerHTML=(h=>h+h)([...document.querySelectorAll('.slide img'),ti[1],ti[2]].map(m=>`<img src='${m.src}' alt=''>`).join(''));
 q('#abImg').src=ti[1].src;
